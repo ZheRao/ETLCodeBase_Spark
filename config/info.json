@@ -1,0 +1,32 @@
+{
+  "systeminfo": {
+    "last_load_date": "2000-01-01",
+    "last_fx": 1.0
+  },
+  "companyinfo": {
+    "us_companies": ["MFUSA", "MFAZ", "MSUSA", "MPUSA"],
+    "ca_companies": ["MSL", "NexGen", "MFBC", "MPL", "MFL"]
+  },
+  
+  "directories": {
+    "base": "projects/ETLPipeline/Database",
+
+    "credentials": {
+      "QBO": ".inputs/dev"
+    },
+    
+    "bronze": {
+      "QBO": {
+        "PL": "Bronze/QBO/PL"
+      }
+    },
+    
+    "silver": {
+      "QBO": {
+        "PL": "Silver/QBO/PL"
+      }
+    }
+  }
+  
+
+}
