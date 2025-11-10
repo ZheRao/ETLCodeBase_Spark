@@ -1,0 +1,66 @@
+
+
+QBO ETL 
+
+    - PL/GL
+
+        -- extract 
+
+            --- goal: extract quarterly PL report and write out raw_bytes content as JSON file 
+
+            --- requirement
+                ---- a partition contains a list of tasks with each task containing 
+                        -> company code: e.g., MFL 
+                        -> period: e.g., start (2024-10-01) end (2024-12-31)
+                        -> report name (used to hit API endpoint): "ProfitAndLossDetail"
+                        -> JSON storage path 
+                        -> API credentials: realm_id, token 
+            
+            --- logic 
+
+                ---- per partition function 
+                        -> define global parameters: BASE_URL, minor_version (should be input), requests.Session()
+                        -> iterate through each task
+                            --> update session.header "Authorization" credentials 
+                            --> use parameters to constract request url 
+                            --> Get request -> record 'results.content' (not 'results.json' as we want raw bytes for faster IO)
+                            --> make 'PL/company' directory if don't exist 
+                            --> write out results in raw bytes 
+                
+                ---- orchestrate with Spark 
+                        -> 'rdd = spark.sparkContext.parallelize(partitions, cores*3)'
+                        -> 'rdd.foreachPartition(func)' (use foreachPartition because not yielding anything, just side effects)
+
+        -- transform (stage 1)
+
+            --- goal: read quarterly PL JSON files -> flatten them into a Spark DataFrame -> save as parquet files partitioned by fiscal year 
+
+            --- requirement 
+                ---- same input partitions containing individual tasks 
+            
+            --- logic 
+
+                ---- per file crawler function (recursive)
+                        -> input: JSON object; parameters: account_info (as two dimensional tuple, for ID and account fullname - accnum + accname), json_level 
+                        -> determine if it is leaf node 
+                            --> if yes, extract info and yield/return 
+                            --> if no, update account_info, crawler(json_level["Rows"]["Row"]) if json_level["Rows"] is not empty 
+
+                
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
