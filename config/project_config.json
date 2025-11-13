@@ -1,0 +1,57 @@
+{
+    "PL": {
+        "columns": {
+            "TransactionDate": "date",
+            "TransactionType": "str",
+            "TransactionID": "str",
+            "DocNumber": "str",
+            "Name": "str",
+            "NameID": "str",
+            "Memo": "str",
+            "SplitAcc": "str",
+            "SplitAccID": "str",
+            "Amount": "float",
+            "Balance": "float",
+            "Location": "str",
+            "LocationID": "str",
+            "Class": "str",
+            "ClassID": "str"
+        },
+        "locations": {
+
+        },
+        "columns_QBO_meta": {
+            "tx_date": "TransactionDate",
+            "txn_type": "TransactionType",
+            "doc_num": "DocNumber",
+            "name": "Name",
+            "dept_name": "Location",
+            "klass_name": "Class",
+            "memo": "Memo",
+            "split_acc": "SplitAcc",
+            "subt_nat_amount": "Amount",
+            "subt_nat_amount_nt": "Amount",
+            "rbal_nat_amount": "Balance",
+            "rbal_nat_amount_nt": "Balance"
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

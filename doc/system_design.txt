@@ -45,6 +45,65 @@ QBO ETL
                         -> determine if it is leaf node 
                             --> if yes, extract info and yield/return 
                             --> if no, update account_info, crawler(json_level["Rows"]["Row"]) if json_level["Rows"] is not empty 
+                
+                ---- at leaf node 
+
+                        -> given: 
+                            --> ordered (based on this report's meta data) and standardized column names ('cols')
+                            --> company code 
+                        
+                        -> initiate an empty dictionary with 'cols'
+                        
+                        -> logic 
+                            --> iterating through 'cols'
+                                ---> update dictionary value with key 'cols'
+                                ---> if it carries 'id' value - record it as well 
+                            --> append account information into the dictionary 
+                
+                ---- flatten_partition
+                        -> load raw_standardized column name mapping 
+                        -> for each task
+                            --> load JSON file 
+                            --> extract company, cols (from meta_data) and standardize 
+                            --> call crawler 
+                
+                ---- orchestrate 
+                        -> rdd = spark.sparkContext.parallelize(partitions, cores*4).mapPartitions(flatten_partition)
+                        -> df = spark.createDataFrame(rdd, schema=TARGET_SCHEMA)
+            
+            --- process for schema-drift resistant flatten 
+
+                ---- observe all QBO column name variations and record them (json["Columns"]["Column"][i]["MetaData"]["Value"] -> "tx_date")
+
+                ---- extract a list of column names (from column meta data at ["Columns"]["Column"]) included in a report and replace the name by the standardized names 
+                        -> e.g., header_roles = ['tx_date', 'txn_type', ...]
+                        -> header_roles_standardized = ["TransactionDate", "TransactionType", ...]
+
+                ---- when flattening - record one by one 
+            
+            --- safe guards
+                
+                ---- (implemented) what if the raw ('tx_date') is not recorded? hence not mapped?
+                        -> at lookup stage for raw column names, if standardized version not found -> just use the original raw column name 
+                        -> so final dataframe will have one column with nonstandardized column name -> then investigate 
+                        -> log it 
+                
+                ---- (not implemented) what if raw column meta data cannot be located? -> 1. use less-stable ["Columns"]["Column"]["ColTitle"] instead of ["Meta"]["Value"]
+
+                ---- (not implemented) what if account id information is missing? currently 
+
+                            if "id" in coldata and "value" in coldata:
+                                acc_info = (coldata["id"], coldata["value"])
+                
+                ---- (not implemented) retry logic 
+            
+            --- optimization for later 
+
+                ---- different parallelism for extract - transform jobs 
+
+                ---- bucket before yield to reduce IO between python/JVM
+
+                
 
                 
 
