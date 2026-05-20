@@ -1,8 +1,8 @@
 """
-src.data_platform.sources.qbo.utils.task_schedular
+src.data_platform.sources.qbo.utils.planner
 
 Purpose:
-    - create spark jobs as a list of dictionaries, so the meta-data (invariants) of each job is encoded into one single element of the list
+    - job planner creates spark jobs as a list of dictionaries, so the meta-data (invariants) of each job is encoded into one single element of the list
 
 Exposed API:
     - `create_jobs` - returns a list of dictionaries with keys `['company', 'start', 'end']`
@@ -28,7 +28,6 @@ class FlattenTask(TypedDict):
     company: str
     start: str   # ISO date
     end: str     # ISO date
-    out_path: str
 
 ## hypter parameters
 _LAST_DAY = {3: 31, 6: 30, 9: 30, 12: 31} # mapping exact date of quarter end for exact ending dates
