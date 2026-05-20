@@ -13,6 +13,9 @@ Exposed Structures:
 
 Note:
     - only support 'quarter' for now
+    - critical philosophy chage: previous task planners always assume calender quarters and adjusting
+    downstream fiscal year inference operationally, and scope final output for targeted fiscal years.
+    now, it is strictly scoped with fiscal quarters from the initial planner
 
 """
 
