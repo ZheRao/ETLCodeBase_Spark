@@ -6,6 +6,10 @@ Purpose:
 
 Exposed API:
     - `create_jobs` - returns a list of dictionaries with keys `['company', 'start', 'end']`
+    - `enrich_qbo_report_task`: enrich global task planner output with QBO report ingestion specific context
+
+Exposed Structures:
+    - `QBOReportIngestionTask` - data structure for quarter task planners for QBO report ingestion pipeline
 
 Note for creating jobs:
     - Must have 
@@ -22,6 +26,11 @@ Note for creating jobs:
 from __future__ import annotations
 import datetime as dt
 from typing import TypedDict, Sequence, Optional
+
+from dataclasses import dataclass
+
+from data_platform.core.utils.contracts import PeriodScopeTask
+from data_platform.core.utils.filesystem import read_configs
 
 # task schedule schema contract
 class FlattenTask(TypedDict):
@@ -73,3 +82,55 @@ def create_jobs(
                     "end": end.isoformat(),
                 })
     return tasks
+
+# new planner for report ingestion
+
+@dataclass(frozen=True)
+class QBOReportIngestionTask:
+    context: PeriodScopeTask
+    source_url: str
+    source_dataset: str 
+    minor_version: int
+
+def enrich_qbo_report_task(
+    *,
+    tasks: list[PeriodScopeTask],
+    source_dataset: str
+) -> list[QBOReportIngestionTask]:
+    """
+    Complete task context for QBO report ingestion tasks
+
+    Args:
+        `tasks`: list of global task planner outputs, including `company, dataset, start, end, period_grain`
+        `source_dataset`: target report name, e.g., 'PL' or 'GL'
+
+    Returns:
+        `QBOReportIngestionTask` objects including `source_url`, `source_dataset`, `minor_version` as additional context
+
+    Requirements
+        - `.../sources/qbo/json_configs/system/qbo.json` config exists
+            - minor version config is `int` stored as `str`
+        - `source_dataset` is one of ['PL', 'GL']
+    """
+    supported_datasets = ["PL", "GL"] 
+    if source_dataset not in supported_datasets:
+        raise ValueError(
+            f"Unsupported QBO Report Ingestion Dataset.\n\n"
+            f"      dataset requested = {source_dataset}.\n"
+            f"      supported datasets = {supported_datasets}.\n"
+        )
+    qbo_config = read_configs(source_system="qbo", config_type="system", name="qbo.json")
+    url, minor_version = qbo_config["base_url"], int(qbo_config["minor_version"])
+    qbo_report_name_mapping = qbo_config["source_name_mapping"]
+    report_name = qbo_report_name_mapping[source_dataset]
+    qbo_tasks = []
+    for task in tasks:
+        qbo_tasks.append(
+            QBOReportIngestionTask(
+                context=task,
+                source_url=url,
+                source_dataset=report_name,
+                minor_version=minor_version
+            )
+        )
+    return qbo_tasks
