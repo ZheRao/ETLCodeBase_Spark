@@ -58,5 +58,13 @@
         "mode": true,
         "format": true
     }
+  },
+  "system/qbo.json": {
+    "base_url": true,
+    "minor_version": true,
+    "source_name_mapping": {
+        "PL": true,
+        "GL": true
+    }
   }
 }

@@ -1,0 +1,8 @@
+{
+    "base_url": "https://quickbooks.api.intuit.com",
+    "minor_version": "75",
+    "source_name_mapping": {
+        "PL": "ProfitAndLossDetail",
+        "GL": "GeneralLedger"
+    }
+}
