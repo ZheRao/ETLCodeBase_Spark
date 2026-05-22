@@ -121,6 +121,6 @@ def create_quarter_tasks(
                 )
             )
 
-            start_date = end_date
+            start_date = end_date + dt.timedelta(days=1)
         
     return tasks
