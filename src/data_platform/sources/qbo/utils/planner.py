@@ -25,6 +25,7 @@ Note for creating jobs:
 
 from __future__ import annotations
 import datetime as dt
+from pathlib import Path
 from typing import TypedDict, Sequence, Optional
 
 from dataclasses import dataclass
@@ -91,11 +92,13 @@ class QBOReportIngestionTask:
     source_url: str
     source_dataset: str 
     minor_version: int
+    out_path: str
 
 def enrich_qbo_report_task(
     *,
     tasks: list[PeriodScopeTask],
-    source_dataset: str
+    source_dataset: str,
+    bronze_root: Path
 ) -> list[QBOReportIngestionTask]:
     """
     Complete task context for QBO report ingestion tasks
@@ -103,14 +106,18 @@ def enrich_qbo_report_task(
     Args:
         `tasks`: list of global task planner outputs, including `company, dataset, start, end, period_grain`
         `source_dataset`: target report name, e.g., 'PL' or 'GL'
+        `bronze_root`: root path to bronze data storage
 
     Returns:
-        `QBOReportIngestionTask` objects including `source_url`, `source_dataset`, `minor_version` as additional context
+        `QBOReportIngestionTask` objects including `source_url`, `source_dataset`, `minor_version`, `out_path` as additional context
 
     Requirements
         - `.../sources/qbo/json_configs/system/qbo.json` config exists
             - minor version config is `int` stored as `str`
         - `source_dataset` is one of ['PL', 'GL']
+    
+    Note
+        - out_path is `bronze_root/QBO/{report_name}/company=.../fiscal_year=.../month=.../api_response.json`
     """
     supported_datasets = ["PL", "GL"] 
     if source_dataset not in supported_datasets:
@@ -125,12 +132,23 @@ def enrich_qbo_report_task(
     report_name = qbo_report_name_mapping[source_dataset]
     qbo_tasks = []
     for task in tasks:
+        start_month = task.start.split("-")[1]
+        out_path = (
+            f"{bronze_root}/"
+            f"QBO/"
+            f"{report_name}/"
+            f"company={task.company}/"
+            f"fiscal_year={task.fiscal_year}/"
+            f"month={start_month}/"
+            f"api_response.json"
+        )
         qbo_tasks.append(
             QBOReportIngestionTask(
                 context=task,
                 source_url=url,
                 source_dataset=report_name,
-                minor_version=minor_version
+                minor_version=minor_version,
+                out_path=out_path
             )
         )
     return qbo_tasks
