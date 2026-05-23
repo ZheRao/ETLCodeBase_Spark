@@ -1,10 +1,7 @@
 {
   "io/path.json": {
     "root": true,
-    "bronze": {
-      "pl": true,
-      "gl": true
-    },
+    "bronze": true,
     "silver": {
       "pl": true,
       "gl": true
@@ -47,6 +44,9 @@
     "fx": true,
     "timestamp": true,
     "source": true
+  },
+  "state/company.json": {
+    "fiscal_year_start_month": true
   },
   "system/spark.json": {
     "run_time": {
