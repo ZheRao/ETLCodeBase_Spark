@@ -7,6 +7,7 @@ Purpose:
 Exposed API:
     - `create_jobs` - returns a list of dictionaries with keys `['company', 'start', 'end']`
     - `enrich_qbo_report_task`: enrich global task planner output with QBO report ingestion specific context
+    - `group_qbo_tasks_by_company`: group a list of tasks by company name/code
 
 Exposed Structures:
     - `QBOReportIngestionTask` - data structure for quarter task planners for QBO report ingestion pipeline
@@ -29,6 +30,7 @@ from pathlib import Path
 from typing import TypedDict, Sequence, Optional
 
 from dataclasses import dataclass
+from collections import defaultdict
 
 from data_platform.core.utils.contracts import PeriodScopeTask
 from data_platform.core.utils.filesystem import read_configs
@@ -152,3 +154,21 @@ def enrich_qbo_report_task(
             )
         )
     return qbo_tasks
+
+def group_qbo_tasks_by_company(
+    qbo_tasks: list[QBOReportIngestionTask]
+) -> dict[str, QBOReportIngestionTask]:
+    """
+    Group tasks into a dictioary with `{"company": [qbo_tasks]}`
+
+    Args:
+        `qbo_tasks`: list of QBOReportIngestionTask objects where `obj.context.company` contains the company name/code
+
+    Returns:
+        Grouped `{"company": [qbo_tasks]}` dictionary
+    """
+    groups = defaultdict(list)
+    for task in qbo_tasks:
+        company = task.context.company
+        groups[company].append(task)
+    return dict(groups)
